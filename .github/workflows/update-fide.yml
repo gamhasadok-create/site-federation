@@ -1,0 +1,36 @@
+name: Update FIDE Tunisia rankings
+
+on:
+  schedule:
+    - cron: "0 3 2 * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update-fide:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Get repository files
+        uses: actions/checkout@v4
+
+      - name: Install Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Generate playersData.js from FIDE
+        run: python update_fide_auto.py
+
+      - name: Commit updated ranking
+        run: |
+          git config user.name "fide-ranking-bot"
+          git config user.email "fide-ranking-bot@users.noreply.github.com"
+          git add playersData.js
+          git commit -m "Update FIDE Tunisia rankings" || echo "No ranking changes"
+          git push
